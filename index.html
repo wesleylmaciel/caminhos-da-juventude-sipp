@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caminhos da Juventude</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Caminhos da Juventude</h1>
+        
+        <div class="game-board">
+            
+            <div id="player-token-red" class="player-token" draggable="true" data-group="red" style="background-color: red;"></div>
+            <div id="player-token-blue" class="player-token" draggable="true" data-group="blue" style="background-color: blue;"></div>
+            <div id="player-token-green" class="player-token" draggable="true" data-group="green" style="background-color: green;"></div>
+            <div id="player-token-yellow" class="player-token" draggable="true" data-group="yellow" style="background-color: yellow;"></div>
+            
+            <div class="house start drop-target" data-index="0">Início</div>
+            
+            <div class="house fund-i drop-target" data-index="1">Fund. I 1º ano</div>
+            <div class="house fund-i drop-target" data-index="2">Fund. I 2º ano</div>
+            <div class="house fund-i drop-target" data-index="3">Fund. I 3º ano</div>
+            <div class="house fund-i drop-target" data-index="4">Fund. I 4º ano</div>
+            <div class="house fund-i drop-target" data-index="5">Fund. I 5º ano</div>
+            
+            <div class="house fund-ii drop-target" data-index="6">Fund. II 6º ano</div>
+            <div class="house fund-ii drop-target" data-index="7">Fund. II 7º ano</div>
+            <div class="house fund-ii drop-target" data-index="8">Fund. II 8º ano</div>
+            <div class="house fund-ii drop-target" data-index="9">Fund. II 9º ano</div>
+            
+            <div class="house medio drop-target" data-index="10">Médio 1º ano</div>
+            <div class="house medio drop-target" data-index="11">Médio 2º ano</div>
+            <div class="house medio drop-target" data-index="12">Médio 3º ano</div>
+            
+            <div class="house trabalho drop-target" data-index="13">Trabalho</div>
+            <div class="house end drop-target" data-index="14">Vitória!</div>
+            
+        </div>
+
+        <div class="info-panels">
+            <div class="turn-order-panel" id="turn-order-panel">
+                <h4>Ordem de Jogo</h4>
+                <div id="player-list">
+                    <p>Definindo a ordem...</p>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="draw-card-btn" disabled>Sortear Carta</button>
+                
+                <p id="dice-result">Ação: Aguardando</p>
+                <p id="current-turn">Turno: Início</p>
+                <p id="active-player-info">Próximo Grupo: Nenhum</p>
+            </div>
+        </div>
+
+
+        <div class="card-display" id="card-display">
+            <h2>Bem-vindo à Jornada!</h2>
+            <p>Para começar, cada grupo deve arrastar seu peão para a casa 'Início' na ordem em que deseja jogar. A ordem de jogo será definida na primeira rodada.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
