@@ -1,7 +1,6 @@
 // O CONTEÚDO DAS CARTAS: Suas cartas de Desafio e Oportunidade
 const cards = [
     // --- CARTAS DE OPORTUNIDADE (Positivas - Avança casas) ---
-    // Cartas originais
     { type: 'oportunidade', title: 'Curso Técnico Gratuito', description: 'Você conseguiu uma bolsa em um curso técnico gratuito.', move: 2 },
     { type: 'oportunidade', title: 'Fortalecimento Escolar', description: 'A escola abriu um projeto de leitura e escrita que fortaleceu suas habilidades.', move: 1 },
     { type: 'oportunidade', title: 'Apoio Familiar', description: 'Um parente ajudou você a pagar o cursinho preparatório.', move: 3 },
@@ -11,398 +10,310 @@ const cards = [
     { type: 'oportunidade', title: 'Reforço Escolar', description: 'A escola ofereceu reforço escolar gratuito e você aproveitou bem.', move: 1 },
     { type: 'oportunidade', title: 'Projeto Cultural', description: 'Participou de um projeto cultural e ampliou suas experiências.', move: 2 },
     
-    // Novas Cartas de Oportunidade Adicionadas
-    { type: 'oportunidade', title: 'Bolsa de Estudos Parcial', description: 'Você conseguiu uma bolsa de estudos parcial, aliviando o custo dos estudos.', move: 2 },
-    { type: 'oportunidade', title: 'Vestibular Aprovado!', description: 'Você passou no vestibular para o curso dos seus sonhos!', move: 3 },
-    { type: 'oportunidade', title: 'Qualificação Profissional', description: 'Você participou de um curso de qualificação profissional gratuito.', move: 2 },
-    { type: 'oportunidade', title: 'Primeiro Emprego', description: 'Foi chamado para a primeira entrevista de emprego e conseguiu a vaga!', move: 3 },
-    { type: 'oportunidade', title: 'Suporte Familiar', description: 'Sua família te apoiou em uma decisão difícil, dando a segurança necessária para avançar.', move: 2 },
-    { type: 'oportunidade', title: 'Melhora da Autoestima', description: 'Você começou a praticar um esporte e melhorou sua autoestima e concentração.', move: 1 },
-    { type: 'oportunidade', title: 'Ações Sociais', description: 'Participou de um projeto social e aprendeu novas habilidades de liderança e comunicação.', move: 2 },
-    { type: 'oportunidade', title: 'Acesso à Tecnologia', description: 'Você ganhou acesso à internet de qualidade e pôde estudar melhor e com mais recursos.', move: 2 },
-    { type: 'oportunidade', title: 'Reconhecimento Online', description: 'Usou redes sociais para divulgar um projeto e recebeu apoio inesperado.', move: 3 },
-    { type: 'oportunidade', title: 'Saúde Mental', description: 'Você começou a cuidar da saúde mental com acompanhamento psicológico, melhorando seu foco.', move: 2 },
-    { type: 'oportunidade', title: 'Rotina Saudável', description: 'Adotou uma rotina saudável que aumentou sua disposição e energia para os estudos e trabalho.', move: 1 },
-    
-    // NOVAS CARTAS DE OPORTUNIDADE (AVANÇO DE 2 CASAS)
-    { type: 'oportunidade', title: 'Aprovação em Curso Extracurricular', description: 'Você se destacou em um curso de idioma ou tecnologia.', move: 2 },
-    { type: 'oportunidade', title: 'Bolsa de Iniciação Científica', description: 'Você conseguiu uma bolsa de estudos para participar de um projeto de pesquisa na escola.', move: 2 },
-    { type: 'oportunidade', title: 'Reconhecimento Comunitário', description: 'Seu esforço em um projeto social foi reconhecido, abrindo portas para novas parcerias.', move: 2 },
-    { type: 'oportunidade', title: 'Melhora no Transporte Público', description: 'A linha de ônibus foi otimizada, permitindo que você ganhe mais tempo de estudo ou descanso.', move: 2 },
-    { type: 'oportunidade', title: 'Organização Financeira', description: 'Você fez um planejamento financeiro e conseguiu guardar dinheiro para investir em material didático.', move: 2 },
-
-
-    // --- CARTAS DE DESAFIO (Negativas - Retrocede casas) ---
-    { type: 'desafio', title: 'Cansaço Noturno', description: 'Você precisa trabalhar à noite e chega cansado para a escola.', move: -2 },
-    { type: 'desafio', title: 'Perda de Prova', description: 'O ônibus atrasou e você perdeu a prova. Retroceda uma casa para recuperar o prejuízo.', move: -1 }, 
-    { type: 'desafio', title: 'Dificuldades FinanCeiras', description: 'Sua família passa por dificuldades financeiras e você precisa trancar os estudos.', move: -3 },
-    { type: 'desafio', title: 'Cuidado com Irmãos', description: 'Precisa cuidar dos irmãos menores e perde tempo de estudo. Retroceda uma casa para reorganizar seu tempo.', move: -1 },
-    { type: 'desafio', title: 'Falta de Material', description: 'Faltou dinheiro para o material escolar.', move: -1 },
-    { type: 'desafio', title: 'Hora Extra', description: 'Você foi chamado para fazer hora extra no trabalho e não conseguiu estudar para a prova.', move: -2 },
-    { type: 'desafio', title: 'Doença Inesperada', description: 'Uma doença inesperada o afastou da escola por alguns dias. Retroceda uma casa para se recuperar totalmente.', move: -1 },
-    
-    // NOVAS CARTAS DE DESAFIO (RETROCESSO DE 1 CASA)
-    { type: 'desafio', title: 'Reforma Escolar Atrasada', description: 'A reforma na escola atrasou, causando desorganização e impactando temporariamente seu foco.', move: -1 },
-    { type: 'desafio', title: 'Problemas com Documentação', description: 'Houve um problema com sua documentação acadêmica ou profissional. Retroceda uma casa para resolver a situação.', move: -1 }
+    // --- CARTAS DE DESAFIO (Negativas - Recua ou Fica Parado) ---
+    { type: 'desafio', title: 'Perda de Foco', description: 'A distração com jogos e redes sociais fez você perder o foco nos estudos.', move: -1 },
+    { type: 'desafio', title: 'Dificuldade Financeira', description: 'Uma dificuldade familiar fez você precisar trabalhar e reduzir seu tempo de estudo.', move: -2 },
+    { type: 'desafio', title: 'Assédio ou Bullying', description: 'Sofreu assédio na escola ou bullying no caminho.', move: 0 },
+    { type: 'desafio', title: 'Desistência Escolar', description: 'Colegas desistiram e você perdeu a motivação momentaneamente.', move: -1 },
+    { type: 'desafio', title: 'Problema de Saúde', description: 'Um problema de saúde levou você a faltar algumas aulas importantes.', move: 0 },
+    { type: 'desafio', title: 'Falta de Orientação', description: 'A falta de orientação profissional fez você se sentir perdido sobre o futuro.', move: -1 },
+    { type: 'desafio', title: 'Influência Negativa', description: 'Uma má influência de um amigo desviou sua atenção da escola.', move: -2 },
+    { type: 'desafio', title: 'Excesso de Faltas', description: 'Excesso de faltas comprometeu sua frequência e notas.', move: -1 }
 ];
 
-// VARIÁVEIS DE ESTADO DO JOGO
-const totalHouses = document.querySelectorAll('.house').length;
-const houses = document.querySelectorAll('.house');
+// VARIÁVEIS DO JOGO E ESTADO DO TURNO
 const drawCardBtn = document.getElementById('draw-card-btn');
-const diceResult = document.getElementById('dice-result');
-const cardDisplay = document.getElementById('card-display');
-const currentTurnDisplay = document.getElementById('current-turn');
+const diceResultText = document.getElementById('dice-result');
+const currentTurnText = document.getElementById('current-turn');
 const activePlayerInfo = document.getElementById('active-player-info');
-const playerListDisplay = document.getElementById('player-list');
+const cardDisplay = document.getElementById('card-display');
 
-const playerPositions = {
-    'red': 0,
-    'blue': 0,
-    'green': 0,
-    'yellow': 0
-};
+// Estado
+let players = ['red', 'blue', 'green', 'yellow'];
+let activePlayerIndex = 0;
+let playerPositions = { 'red': 0, 'blue': 0, 'green': 0, 'yellow': 0 };
+let cardDrawn = false; // Se a carta foi sorteada neste turno
+let currentMove = 0; // O movimento da última carta sorteada
+let tokenInDrag = null; // O peão que está sendo arrastado ou tocado
+let tokenOffsetX = 0; // Usado para ajuste do toque no celular
+let tokenOffsetY = 0; // Usado para ajuste do toque no celular
 
-// Variáveis de Gerenciamento de Turno
-const allPlayers = ['red', 'blue', 'green', 'yellow'];
-let turnOrder = []; 
-let missTurnCount = {}; 
-let currentPlayerIndex = 0;
-let setupPhase = true; 
-let playerToMove = null;
-let gameFinished = false; 
 
-// VARIÁVEL ADICIONADA: Armazena o índice da última carta sorteada para evitar repetição imediata
-let lastDrawnCardIndex = -1;
-let currentDraggedToken = null; // Rastreia o peão sendo arrastado no toque
+// --- LÓGICA DE TURNOS E BOTÃO ---
 
-const tokenOffsets = {
-    'red': { x: -5, y: -5 },
-    'blue': { x: 5, y: -5 },
-    'green': { x: -5, y: 5 },
-    'yellow': { x: 5, y: 5 }
-};
+function updateTurnInfo() {
+    const activePlayer = players[activePlayerIndex];
+    currentTurnText.textContent = `Turno: Grupo ${activePlayer.toUpperCase()}`;
+    activePlayerInfo.textContent = `Próximo Grupo: Arraste o peão ${activePlayer.toUpperCase()}`;
 
-// --- FUNÇÕES DE LÓGICA DE TURNO ---
-
-function updateTurnDisplay() {
-    if (turnOrder.length === 0) {
-        playerListDisplay.innerHTML = '<p>Arraste os peões para o Início na ordem desejada.</p>';
-        activePlayerInfo.textContent = 'Próximo Grupo: Nenhum (Defina a ordem)';
-        return;
+    // Mostra qual peão está ativo, se a carta já foi sorteada
+    if (cardDrawn) {
+        document.querySelectorAll('.player-token').forEach(token => {
+            token.style.opacity = token.dataset.group === activePlayer ? '1' : '0.5';
+        });
+    } else {
+         document.querySelectorAll('.player-token').forEach(token => {
+            token.style.opacity = '1';
+        });
+        activePlayerInfo.textContent = `Próximo Grupo: Clique em "Sortear Carta"`;
     }
-
-    let listHtml = '';
-    
-    turnOrder.forEach((playerColor, index) => {
-        let classes = '';
-        if (index === currentPlayerIndex) {
-            classes += 'is-active';
-            activePlayerInfo.textContent = `Turno: Grupo ${playerColor.toUpperCase()}`;
-        }
-        
-        listHtml += `<p class="${classes}" style="color: ${playerColor};">Grupo ${playerColor.toUpperCase()}</p>`;
-    });
-
-    playerListDisplay.innerHTML = listHtml;
 }
 
-function advanceTurn() {
-    if (gameFinished || setupPhase) return;
+function endTurn() {
+    // Esconde a carta
+    cardDisplay.style.display = 'none';
+    
+    // Passa para o próximo jogador
+    activePlayerIndex = (activePlayerIndex + 1) % players.length;
+    cardDrawn = false;
+    currentMove = 0;
 
-    playerToMove = null; 
-    drawCardBtn.disabled = true;
+    // Reabilita o botão para o próximo jogador
+    drawCardBtn.disabled = false; 
 
-    currentPlayerIndex = (currentPlayerIndex + 1) % turnOrder.length;
-    let nextPlayerColor = turnOrder[currentPlayerIndex];
-
-    playerToMove = nextPlayerColor; 
-    updateTurnDisplay();
-    currentTurnDisplay.textContent = `Turno: Grupo ${playerToMove.toUpperCase()}`;
-    activePlayerInfo.textContent = `Próximo Grupo: Arraste o peão de ${playerToMove.toUpperCase()} para iniciar!`;
+    // Atualiza a informação do turno
+    updateTurnInfo();
 }
-
-function centerTokenOnHouse(tokenColor, targetHouse) {
-    const token = document.getElementById(`player-token-${tokenColor}`);
-    
-    if (!token || !targetHouse) return; 
-
-    const gameBoard = document.querySelector('.game-board');
-    const houseRect = targetHouse.getBoundingClientRect();
-    const boardRect = gameBoard.getBoundingClientRect();
-    
-    const centerX = (houseRect.left - boardRect.left) + gameBoard.scrollLeft + (houseRect.width / 2); 
-    const centerY = houseRect.top - boardRect.top + (houseRect.height / 2);
-    
-    const offsetX = tokenOffsets[tokenColor].x;
-    const offsetY = tokenOffsets[tokenColor].y;
-
-    token.style.left = `${centerX + offsetX - (token.offsetWidth / 2)}px`;
-    token.style.top = `${centerY + offsetY - (token.offsetHeight / 2)}px`;
-}
-
-
-// --- FUNÇÃO ÚNICA DE LÓGICA DO JOGO ---
 
 function drawCardAndMove() {
-    if (gameFinished) {
-        cardDisplay.innerHTML = `<h2>O JOGO ACABOU!</h2><p>O grupo vencedor já foi determinado.</p>`;
-        return;
+    if (cardDrawn) return; // Impede sorteio duplo
+    
+    const activePlayer = players[activePlayerIndex];
+
+    // 1. Sorteia a carta
+    const randomIndex = Math.floor(Math.random() * cards.length);
+    const drawnCard = cards[randomIndex];
+    currentMove = drawnCard.move;
+    cardDrawn = true;
+    drawCardBtn.disabled = true; // Desabilita o botão após sortear a carta
+
+    // 2. Exibe a carta e a ação
+    document.getElementById('card-title').textContent = drawnCard.title;
+    document.getElementById('card-description').textContent = drawnCard.description;
+    
+    let moveText = '';
+    if (currentMove > 0) {
+        moveText = `AVANÇAR ${currentMove} CASO(S).`;
+    } else if (currentMove < 0) {
+        moveText = `RECUE ${Math.abs(currentMove)} CASO(S).`;
+    } else {
+        moveText = 'FICAR PARADO NESTE TURNO.';
     }
     
-    const playerColor = turnOrder[currentPlayerIndex];
-    
-    if (playerToMove !== playerColor || drawCardBtn.disabled) {
-        cardDisplay.innerHTML = `<h2>Atenção!</h2><p>É a vez do **Grupo ${playerColor.toUpperCase()}**. Arraste o peão dele para a casa atual e clique em "Sortear Carta".</p>`;
-        return;
-    }
+    document.getElementById('card-move-info').textContent = moveText;
+    diceResultText.textContent = `Ação: ${drawnCard.type.toUpperCase()} - ${moveText}`;
+    cardDisplay.style.display = 'block';
 
-    drawCardBtn.disabled = true;
-    currentTurnDisplay.textContent = `Turno do Grupo ${playerColor.toUpperCase()}: Sorteando Carta...`;
-    diceResult.textContent = 'Ação: Carta Sorteada';
-    
-    // LÓGICA DE SORTEIO DE CARTA (COM PREVENÇÃO DE REPETIÇÃO)
-    let randomIndex;
-    let attempts = 0;
-    
-    do {
-        randomIndex = Math.floor(Math.random() * cards.length);
-        attempts++;
-        if (attempts > 50) break;
-    } while (randomIndex === lastDrawnCardIndex);
-
-    lastDrawnCardIndex = randomIndex;
-    
-    const selectedCard = cards[randomIndex];
-    let movementText = '';
-    
-    // LÓGICA DE MOVIMENTO AUTOMÁTICO
-    if (selectedCard.move !== undefined) {
-        let currentPosition = playerPositions[playerColor];
-        let newPosition = currentPosition + selectedCard.move;
-
-        if (newPosition < 0) newPosition = 0;
-        
-        if (newPosition >= totalHouses - 1) newPosition = totalHouses - 1; 
-
-        playerPositions[playerColor] = newPosition;
-        
-        const targetHouse = houses[newPosition];
-        centerTokenOnHouse(playerColor, targetHouse);
-        
-        if (selectedCard.move > 0) {
-            movementText = `<br><strong>Ação do Movimento: AVANÇO DE ${selectedCard.move} casas!</strong>`;
-        } else if (selectedCard.move < 0) {
-            movementText = `<br><strong>Ação do Movimento: RETROCESSO DE ${Math.abs(selectedCard.move)} casas!</strong>`;
-        }
-    } 
-    
-    let missTurnText = '';
-    
-    // Aplica o estilo de borda da carta e preenche o conteúdo
-    cardDisplay.className = `card-display ${selectedCard.type}`;
-    cardDisplay.innerHTML = `
-        <h3>[Carta de ${selectedCard.type.toUpperCase()} - Grupo ${playerColor.toUpperCase()}]</h3>
-        <h4>${selectedCard.title}</h4>
-        <p>${selectedCard.description}</p>
-        ${movementText}
-        ${missTurnText}
-        <p class="reflection-prompt"><strong>Discussão:</strong> O que esta carta revela sobre a realidade da juventude, trabalho e escola?</p>
-    `;
-
-    // VERIFICAÇÃO DE VITÓRIA
-    if (playerPositions[playerColor] === totalHouses - 1) {
-        gameFinished = true;
-        cardDisplay.innerHTML = `<h2 class="oportunidade">🏆 VITÓRIA DO GRUPO ${playerColor.toUpperCase()}! 🏆</h2><p>O grupo completou a jornada. Parabéns!</p>`;
-        drawCardBtn.disabled = true; 
-        currentTurnDisplay.textContent = 'FIM DE JOGO';
-        activePlayerInfo.textContent = 'Parabéns ao Grupo Vencedor!';
-        updateTurnDisplay();
-        return;
-    }
-    
-    // Finalização normal do turno: passa a vez
-    advanceTurn();
+    // 3. Informa o jogador para mover
+    updateTurnInfo();
 }
 
+// --- LÓGICA DE POSICIONAMENTO E DRAG/DROP ---
 
-// --- FUNÇÕES DRAG AND DROP (MOUSE) E TOUCH (TOQUE) ---
+function moveTokenToHouse(playerToMove, targetIndex) {
+    const token = document.getElementById(`player-token-${playerToMove}`);
+    const targetHouse = document.querySelector(`.house[data-index="${targetIndex}"]`);
+    
+    if (token && targetHouse) {
+        // Obtém a posição da casa alvo
+        const houseRect = targetHouse.getBoundingClientRect();
+        const boardRect = document.querySelector('.game-board').getBoundingClientRect();
+        
+        // Calcula a posição do token relativa ao tabuleiro
+        let tokenX = houseRect.left - boardRect.left;
+        let tokenY = houseRect.top - boardRect.top;
+        
+        // Ajusta a posição para centralizar o token e aplicar o offset para evitar sobreposição
+        const tokenWidth = token.offsetWidth;
+        const tokenHeight = token.offsetHeight;
+        
+        tokenX += (houseRect.width / 2) - (tokenWidth / 2);
+        tokenY += (houseRect.height / 2) - (tokenHeight / 2);
 
-// Função auxiliar para obter as coordenadas do evento (seja mouse ou touch)
-function getCoords(e) {
-    return e.touches ? e.touches[0] : e;
+        // Aplica um pequeno offset para que os peões não fiquem exatamente sobrepostos
+        const offsetMultiplier = players.indexOf(playerToMove);
+        const offset = offsetMultiplier * 5; // 5px de separação entre os peões
+
+        token.style.left = `${tokenX + offset}px`;
+        token.style.top = `${tokenY + offset}px`;
+
+        // Atualiza a posição lógica
+        playerPositions[playerToMove] = targetIndex;
+    }
 }
 
-// 1. INÍCIO DO ARRASTO (MOUSE: dragstart / TOUCH: touchstart)
 function handleDragStart(e) {
-    if (gameFinished) return;
-    
-    let targetElement = e.target;
+    const playerToMove = e.target.dataset.group;
+    const activePlayer = players[activePlayerIndex];
 
-    // Para Toque, precisamos definir o peão que está sendo arrastado
-    if (e.type === 'touchstart') {
-        const touch = getCoords(e);
-        targetElement = touch.target;
-        
-        if (targetElement.classList.contains('player-token')) {
-            currentDraggedToken = targetElement;
-            // **CORREÇÃO APLICADA AQUI:** Previna o comportamento padrão *apenas* se o toque
-            // começar em um peão, garantindo que o scroll funcione em outras áreas.
-            e.preventDefault(); 
-        } else {
-            currentDraggedToken = null;
-            return;
-        }
-    } else {
-        // Se for dragstart, o target já está pronto
-        currentDraggedToken = targetElement;
-    }
-    
-    if (!currentDraggedToken || !currentDraggedToken.classList.contains('player-token')) return;
-
-    const draggedPlayer = currentDraggedToken.getAttribute('data-group');
-    if (e.dataTransfer) e.dataTransfer.setData('text/plain', currentDraggedToken.id);
-    
-    if (setupPhase) {
-        if (turnOrder.includes(draggedPlayer)) return;
-        playerToMove = draggedPlayer;
-        
-        if (playerPositions[draggedPlayer] === 0) {
-            turnOrder.push(draggedPlayer);
-            updateTurnDisplay();
-        }
-
-        if (turnOrder.length === allPlayers.length) {
-            setupPhase = false;
-            currentPlayerIndex = 0;
-            playerToMove = turnOrder[currentPlayerIndex]; 
-            updateTurnDisplay();
-            currentTurnDisplay.textContent = `Turno: Grupo ${playerToMove.toUpperCase()}`;
-            activePlayerInfo.textContent = `Turno: Grupo ${playerToMove.toUpperCase()}`;
-            drawCardBtn.disabled = false;
-        }
-
-    } else {
-        const activePlayer = turnOrder[currentPlayerIndex];
-        
-        if (draggedPlayer === activePlayer) {
-            playerToMove = draggedPlayer;
-            drawCardBtn.disabled = false;
-            currentTurnDisplay.textContent = `Turno: Grupo ${playerToMove.toUpperCase()} - PRONTO!`;
-        } else {
-            cardDisplay.innerHTML = `<h2>Atenção!</h2><p>É a vez do **Grupo ${activePlayer.toUpperCase()}**, não do Grupo ${draggedPlayer.toUpperCase()}.</p>`;
-            drawCardBtn.disabled = true; 
-        }
-    }
-}
-
-// 2. MOVIMENTO DO ARRASTO (MOUSE: dragover / TOUCH: touchmove)
-function handleDragOver(e) {
-    // Para mouse, preventDefault é necessário para permitir o drop
-    if (e.type === 'dragover') {
-        e.preventDefault(); 
-    }
-    
-    // Se for toque e houver um token sendo arrastado, mova-o
-    if (e.type === 'touchmove' && currentDraggedToken) {
-        // **CORREÇÃO APLICADA AQUI:** Previna o default no touchmove *apenas* se estiver arrastando um peão
+    if (!cardDrawn || playerToMove !== activePlayer) {
+        // Impede o arrasto se a carta não foi sorteada ou se não é o turno dele
         e.preventDefault();
-        
-        const touch = getCoords(e);
-        const gameBoard = document.querySelector('.game-board');
-        const boardRect = gameBoard.getBoundingClientRect();
-        
-        let newX = touch.clientX - boardRect.left;
-        let newY = touch.clientY - boardRect.top;
-        
-        // Aplica o offset de scroll
-        newX += gameBoard.scrollLeft;
-        
-        // Centraliza o peão na posição do dedo
-        newX -= currentDraggedToken.offsetWidth / 2;
-        newY -= currentDraggedToken.offsetHeight / 2;
-
-        currentDraggedToken.style.left = `${newX}px`;
-        currentDraggedToken.style.top = `${newY}px`;
+        return; 
     }
+    
+    // Permite o drag
+    e.dataTransfer.setData('text/plain', playerToMove);
+    tokenInDrag = e.target;
 }
 
-// 3. FIM DO ARRASTO (MOUSE: drop / TOUCH: touchend)
+function handleDragOver(e) {
+    e.preventDefault(); // Permite o drop
+}
+
 function handleDrop(e) {
     e.preventDefault();
+    const playerToMove = e.dataTransfer.getData('text/plain');
+    const activePlayer = players[activePlayerIndex];
     
-    let targetHouse = null;
-    let originalPlayerToMove = playerToMove;
+    if (!playerToMove || playerToMove !== activePlayer || !cardDrawn) {
+        return; // Sai se não houver token ou não for o turno correto
+    }
 
-    if (e.type === 'drop') {
-        targetHouse = e.target.closest('.drop-target');
-        currentDraggedToken = null; 
+    const target = e.target.closest('.drop-target');
+    if (target) {
+        const targetIndex = parseInt(target.dataset.index);
+        const currentIndex = playerPositions[activePlayer];
 
-    } else if (e.type === 'touchend' && currentDraggedToken) {
-        const touch = getCoords(e.changedTouches[0]);
-        const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
-        targetHouse = elementUnderFinger ? elementUnderFinger.closest('.drop-target') : null;
+        // Calcula a posição esperada e a posição mínima/máxima permitida
+        let expectedNewPosition = currentIndex + currentMove;
         
-        // Se o arrasto for cancelado ou não cair em uma casa, reposiciona o peão
-        if (!targetHouse) {
-            // **CORREÇÃO APLICADA AQUI:** Garante que o peão volte à posição central se não cair em uma casa
-            if (originalPlayerToMove) {
-                 centerTokenOnHouse(originalPlayerToMove, houses[playerPositions[originalPlayerToMove]]);
-            }
+        // Limita a posição final ao máximo de casas (data-index 14)
+        if (expectedNewPosition > 14) {
+             expectedNewPosition = 14; 
+        }
+
+        // Limita a posição mínima (data-index 0)
+        if (expectedNewPosition < 0) {
+            expectedNewPosition = 0;
+        }
+
+        // Verifica se o jogador tentou mover para a posição correta (considerando o range)
+        if (targetIndex === expectedNewPosition) {
+            
+            // Move o peão para a casa logicamente correta e atualiza o estado
+            moveTokenToHouse(activePlayer, targetIndex);
+            
+            // Fim do turno (com movimento válido)
+            endTurn();
         } else {
-            // Se caiu em uma casa válida, definimos o token que foi arrastado para a lógica abaixo
-            const draggedPlayer = currentDraggedToken.getAttribute('data-group');
-            playerToMove = draggedPlayer;
+            alert(`Movimento inválido! Você deve ir para a casa ${expectedNewPosition}.`);
+        }
+    }
+}
+
+// --- ADAPTANDO DRAG/DROP PARA TOUCH (CELULAR) ---
+
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    const token = touch.target.closest('.player-token');
+    
+    if (token) {
+        const playerToMove = token.dataset.group;
+        const activePlayer = players[activePlayerIndex];
+
+        if (!cardDrawn || playerToMove !== activePlayer) {
+            return; // Impede o toque se a carta não foi sorteada ou não é o turno
         }
         
-        // Reseta o peão rastreado
-        currentDraggedToken = null;
-    }
-    
-    // Lógica de processamento final
-    if (targetHouse && playerToMove) {
-        const targetIndex = parseInt(targetHouse.getAttribute('data-index'));
+        tokenInDrag = token;
+        tokenInDrag.style.position = 'absolute';
         
-        centerTokenOnHouse(playerToMove, targetHouse);
-        playerPositions[playerToMove] = targetIndex;
+        // Calcula o offset para que o token não salte quando começar o movimento
+        const rect = token.getBoundingClientRect();
+        tokenOffsetX = touch.clientX - rect.left;
+        tokenOffsetY = touch.clientY - rect.top;
+        
+        e.preventDefault();
+    }
+}
+
+function handleTouchMove(e) {
+    if (tokenInDrag) {
+        const touch = e.touches[0];
+        const boardRect = document.querySelector('.game-board').getBoundingClientRect();
+        
+        // Calcula a nova posição relativa ao tabuleiro, ajustada pelo offset
+        let newX = touch.clientX - boardRect.left - tokenOffsetX;
+        let newY = touch.clientY - boardRect.top - tokenOffsetY;
+
+        tokenInDrag.style.left = `${newX}px`;
+        tokenInDrag.style.top = `${newY}px`;
+        
+        e.preventDefault();
+    }
+}
+
+function handleTouchEnd(e) {
+    if (tokenInDrag) {
+        const activePlayer = players[activePlayerIndex];
+        const token = tokenInDrag;
+        
+        // Acha o ponto de "drop" (onde o dedo foi levantado)
+        const touchX = token.getBoundingClientRect().left + (token.offsetWidth / 2);
+        const touchY = token.getBoundingClientRect().top + (token.offsetHeight / 2);
+
+        // Encontra a casa sob o ponto de "drop"
+        token.style.display = 'none'; // Temporariamente esconde para achar o elemento de baixo
+        const targetElement = document.elementFromPoint(touchX, touchY);
+        token.style.display = 'block';
+
+        const target = targetElement ? targetElement.closest('.drop-target') : null;
+
+        if (target) {
+            const targetIndex = parseInt(target.dataset.index);
+            const currentIndex = playerPositions[activePlayer];
+
+            // A mesma lógica de validação de movimento que existe no handleDrop
+            let expectedNewPosition = currentIndex + currentMove;
+            if (expectedNewPosition > 14) { expectedNewPosition = 14; }
+            if (expectedNewPosition < 0) { expectedNewPosition = 0; }
+
+            if (targetIndex === expectedNewPosition) {
+                // Move o peão para a casa logicamente correta e atualiza o estado
+                moveTokenToHouse(activePlayer, targetIndex);
+                // Fim do turno
+                endTurn();
+            } else {
+                alert(`Movimento inválido! Você deve ir para a casa ${expectedNewPosition}.`);
+                // Se inválido, o peão deve voltar para sua posição inicial (re-renderiza)
+                moveTokenToHouse(activePlayer, currentIndex);
+            }
+        } else {
+             // Se soltou fora de uma casa, volta para a posição inicial
+             moveTokenToHouse(activePlayer, playerPositions[activePlayer]);
+        }
+
+        tokenInDrag = null;
     }
 }
 
 
 // --- INICIALIZAÇÃO E EVENT LISTENERS ---
 
+// Evento de clique para o botão (funciona para mouse e touch)
 drawCardBtn.addEventListener('click', drawCardAndMove);
 
-// Eventos de Mouse (Drag and Drop)
+// Adiciona eventos de Drag and Drop (Mouse)
 document.addEventListener('dragstart', handleDragStart);
 document.addEventListener('dragover', handleDragOver);
 document.addEventListener('drop', handleDrop);
 
-// Eventos de Toque (Touch)
-// Os eventos touchstart e touchmove estão sem { passive: false } aqui para não bloquear o scroll por padrão
-document.addEventListener('touchstart', handleDragStart); 
-document.addEventListener('touchmove', handleDragOver); 
-document.addEventListener('touchend', handleDrop);
+// Adiciona eventos de Touch (Celular)
+document.addEventListener('touchstart', handleTouchStart);
+document.addEventListener('touchmove', handleTouchMove, { passive: false });
+document.addEventListener('touchend', handleTouchEnd);
 
 
+// Posiciona os 4 peões inicialmente na casa 'Início'
 window.onload = function() {
     
-    const startHouse = houses[0];
-    centerTokenOnHouse('red', startHouse);
-    centerTokenOnHouse('blue', startHouse);
-    centerTokenOnHouse('green', startHouse);
-    centerTokenOnHouse('yellow', startHouse);
-    
-    updateTurnDisplay(); 
+    // Reposiciona os peões na casa inicial, usando os offsets para evitar sobreposição
+    moveTokenToHouse('red', 0);
+    moveTokenToHouse('blue', 0);
+    moveTokenToHouse('green', 0);
+    moveTokenToHouse('yellow', 0);
 
-    document.querySelectorAll('.drop-target').forEach(house => {
-        // Eventos de mouse já configurados
-        house.addEventListener('dragover', handleDragOver);
-        house.addEventListener('drop', handleDrop);
-        
-        // Eventos de Toque
-        house.addEventListener('touchstart', handleDragStart);
-        house.addEventListener('touchmove', handleDragOver);
-        house.addEventListener('touchend', handleDrop);
-    });
+    // Inicia a exibição do turno
+    updateTurnInfo();
 };
