@@ -82,6 +82,9 @@ const tokenOffsets = {
     'yellow': { x: 5, y: 5 }
 };
 
+// Variável para armazenar o token arrastado (usado no Touch)
+let draggedToken = null; 
+
 // --- FUNÇÕES DE LÓGICA DE TURNO ---
 
 // Atualiza o display da ordem de jogo
@@ -301,6 +304,121 @@ function handleDrop(e) {
 }
 
 
+// --- FUNÇÕES TOUCH (PARA CELULAR) ---
+
+function handleTouchStart(e) {
+    if (gameFinished) return;
+    // O evento touchstart deve ser ignorado para rolagem vertical
+    if (e.touches.length > 1) return; // Ignora multi-touch
+    
+    const touch = e.touches[0];
+    const target = touch.target;
+
+    // Apenas se o toque for em um peão
+    if (target.classList.contains('player-token')) {
+        // Previne a rolagem da página quando o peão é tocado, para permitir o "arrasto" dele
+        e.preventDefault(); 
+        draggedToken = target;
+
+        const draggedPlayer = draggedToken.getAttribute('data-group');
+        
+        // Replicar a lógica de handleDragStart
+        if (setupPhase) {
+            if (turnOrder.includes(draggedPlayer)) return;
+            playerToMove = draggedPlayer;
+            
+            if (playerPositions[draggedPlayer] === 0) {
+                turnOrder.push(draggedPlayer);
+                updateTurnDisplay();
+            }
+
+            if (turnOrder.length === allPlayers.length) {
+                setupPhase = false;
+                currentPlayerIndex = 0;
+                playerToMove = turnOrder[currentPlayerIndex]; 
+                updateTurnDisplay();
+                currentTurnDisplay.textContent = `Turno: Grupo ${playerToMove.toUpperCase()}`;
+                activePlayerInfo.textContent = `Turno: Grupo ${playerToMove.toUpperCase()}`;
+                drawCardBtn.disabled = false;
+            }
+
+        } else {
+            const activePlayer = turnOrder[currentPlayerIndex];
+            
+            if (draggedPlayer === activePlayer) {
+                playerToMove = draggedPlayer;
+                drawCardBtn.disabled = false;
+                currentTurnDisplay.textContent = `Turno: Grupo ${playerToMove.toUpperCase()} - PRONTO!`;
+            } else {
+                cardDisplay.innerHTML = `<h2>Atenção!</h2><p>É a vez do **Grupo ${activePlayer.toUpperCase()}**, não do Grupo ${draggedPlayer.toUpperCase()}.</p>`;
+                drawCardBtn.disabled = true; 
+                draggedToken = null; // Impede que continue o movimento de um peão errado
+            }
+        }
+    } else {
+        // Se o toque não é no peão, permitir rolagem (mas o default já é permitir, então nada a fazer aqui)
+    }
+}
+
+function handleTouchMove(e) {
+    if (!draggedToken) return;
+    
+    // Previne a rolagem da página ENQUANTO o peão está sendo movido
+    e.preventDefault(); 
+    
+    const touch = e.touches[0];
+    const token = draggedToken;
+    const houseRect = houses[playerPositions[playerToMove]].getBoundingClientRect();
+
+    // Move o token seguindo o dedo, mas restrito ao centro da casa atual para evitar que saia muito longe
+    // O token não precisa se mover suavemente na tela, apenas precisa disparar o drop no final.
+    // Manteremos a posição do token baseada na casa atual, mas daremos um feedback visual de "pego"
+    
+    // Estilo temporário para dar feedback visual de que o peão está sendo movido
+    const gameBoard = document.querySelector('.game-board');
+    const boardRect = gameBoard.getBoundingClientRect();
+
+    const targetX = touch.clientX - boardRect.left + gameBoard.scrollLeft;
+    const targetY = touch.clientY - boardRect.top;
+
+    // Atualiza a posição visual temporária (opcional, para feedback de arrasto)
+    // token.style.left = `${targetX - (token.offsetWidth / 2)}px`;
+    // token.style.top = `${targetY - (token.offsetHeight / 2)}px`;
+}
+
+function handleTouchEnd(e) {
+    if (!draggedToken) return;
+    
+    // Pegar a última posição do toque (ou o que sobrou, no caso de um touchend)
+    const touch = e.changedTouches[0];
+    
+    // Encontrar o elemento (casa) onde o toque finalizou
+    const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    // Se o elemento final for uma casa (drop-target)
+    if (targetElement && targetElement.classList.contains('drop-target')) {
+        const targetHouse = targetElement;
+        
+        // Replicar a lógica de handleDrop
+        if (playerToMove) {
+            const targetIndex = parseInt(targetHouse.getAttribute('data-index'));
+            
+            centerTokenOnHouse(playerToMove, targetHouse);
+            playerPositions[playerToMove] = targetIndex;
+            
+            // O botão de sortear carta já foi ativado no handleTouchStart (se for o jogador certo)
+        }
+    } else if (playerToMove) {
+        // Se soltou fora de uma casa, centraliza de volta na casa atual para o peão correto
+        const targetHouse = houses[playerPositions[playerToMove]];
+        centerTokenOnHouse(playerToMove, targetHouse);
+    }
+    
+    // Limpar o token arrastado
+    draggedToken = null;
+}
+
+
 // --- INICIALIZAÇÃO E EVENT LISTENERS ---
 
 drawCardBtn.addEventListener('click', drawCardAndMove);
@@ -324,5 +442,19 @@ window.onload = function() {
     document.querySelectorAll('.drop-target').forEach(house => {
         house.addEventListener('dragover', handleDragOver);
         house.addEventListener('drop', handleDrop);
+        
+        // Adicionar eventos de toque para o drop-target também (para reconhecer o final do arrasto)
+        house.addEventListener('touchmove', handleTouchMove);
+        house.addEventListener('touchend', handleTouchEnd);
     });
+
+    // Adicionar eventos de toque para os peões
+    document.querySelectorAll('.player-token').forEach(token => {
+        token.addEventListener('touchstart', handleTouchStart, { passive: false });
+        // O move e end são globais ou adicionados na casa. Adicionamos o end e move no body
+    });
+
+    // Adicionar listeners de move e end ao body para capturar a soltura em qualquer lugar
+    document.body.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.body.addEventListener('touchend', handleTouchEnd);
 };
