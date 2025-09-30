@@ -237,22 +237,28 @@ function getCoords(e) {
 function handleDragStart(e) {
     if (gameFinished) return;
     
+    let targetElement = e.target;
+
     // Para Toque, precisamos definir o peão que está sendo arrastado
     if (e.type === 'touchstart') {
         const touch = getCoords(e);
-        currentDraggedToken = touch.target;
-        if (!currentDraggedToken || !currentDraggedToken.classList.contains('player-token')) {
+        targetElement = touch.target;
+        
+        if (targetElement.classList.contains('player-token')) {
+            currentDraggedToken = targetElement;
+            // **CORREÇÃO APLICADA AQUI:** Previna o comportamento padrão *apenas* se o toque
+            // começar em um peão, garantindo que o scroll funcione em outras áreas.
+            e.preventDefault(); 
+        } else {
             currentDraggedToken = null;
             return;
         }
-        // Previna o comportamento padrão do navegador (como o scroll)
-        e.preventDefault(); 
     } else {
         // Se for dragstart, o target já está pronto
-        currentDraggedToken = e.target;
+        currentDraggedToken = targetElement;
     }
     
-    if (!currentDraggedToken) return;
+    if (!currentDraggedToken || !currentDraggedToken.classList.contains('player-token')) return;
 
     const draggedPlayer = currentDraggedToken.getAttribute('data-group');
     if (e.dataTransfer) e.dataTransfer.setData('text/plain', currentDraggedToken.id);
@@ -292,10 +298,16 @@ function handleDragStart(e) {
 
 // 2. MOVIMENTO DO ARRASTO (MOUSE: dragover / TOUCH: touchmove)
 function handleDragOver(e) {
-    e.preventDefault(); 
+    // Para mouse, preventDefault é necessário para permitir o drop
+    if (e.type === 'dragover') {
+        e.preventDefault(); 
+    }
     
     // Se for toque e houver um token sendo arrastado, mova-o
     if (e.type === 'touchmove' && currentDraggedToken) {
+        // **CORREÇÃO APLICADA AQUI:** Previna o default no touchmove *apenas* se estiver arrastando um peão
+        e.preventDefault();
+        
         const touch = getCoords(e);
         const gameBoard = document.querySelector('.game-board');
         const boardRect = gameBoard.getBoundingClientRect();
@@ -320,28 +332,27 @@ function handleDrop(e) {
     e.preventDefault();
     
     let targetHouse = null;
+    let originalPlayerToMove = playerToMove;
 
     if (e.type === 'drop') {
-        // Se for evento de mouse (drop), o target é o elemento sob o cursor
         targetHouse = e.target.closest('.drop-target');
-        // O peão já foi solto, resetamos o rastreamento
         currentDraggedToken = null; 
 
     } else if (e.type === 'touchend' && currentDraggedToken) {
-        // Se for evento de toque (touchend), precisamos encontrar a casa de destino
         const touch = getCoords(e.changedTouches[0]);
-        // Usa elementFromPoint para encontrar o elemento sob o dedo
         const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
         targetHouse = elementUnderFinger ? elementUnderFinger.closest('.drop-target') : null;
         
-        // Garante que o peão volte à posição central se não cair em uma casa
-        if (targetHouse) {
+        // Se o arrasto for cancelado ou não cair em uma casa, reposiciona o peão
+        if (!targetHouse) {
+            // **CORREÇÃO APLICADA AQUI:** Garante que o peão volte à posição central se não cair em uma casa
+            if (originalPlayerToMove) {
+                 centerTokenOnHouse(originalPlayerToMove, houses[playerPositions[originalPlayerToMove]]);
+            }
+        } else {
             // Se caiu em uma casa válida, definimos o token que foi arrastado para a lógica abaixo
             const draggedPlayer = currentDraggedToken.getAttribute('data-group');
             playerToMove = draggedPlayer;
-        } else {
-            // Se não caiu em lugar nenhum, reposiciona o peão na casa atual
-            centerTokenOnHouse(playerToMove, houses[playerPositions[playerToMove]]);
         }
         
         // Reseta o peão rastreado
@@ -368,30 +379,30 @@ document.addEventListener('dragover', handleDragOver);
 document.addEventListener('drop', handleDrop);
 
 // Eventos de Toque (Touch)
-document.addEventListener('touchstart', handleDragStart, { passive: false });
-document.addEventListener('touchmove', handleDragOver, { passive: false });
+// Os eventos touchstart e touchmove estão sem { passive: false } aqui para não bloquear o scroll por padrão
+document.addEventListener('touchstart', handleDragStart); 
+document.addEventListener('touchmove', handleDragOver); 
 document.addEventListener('touchend', handleDrop);
 
 
 window.onload = function() {
     
-    // Posiciona os peões na casa inicial, usando a função de centralização para alinhamento perfeito
     const startHouse = houses[0];
     centerTokenOnHouse('red', startHouse);
     centerTokenOnHouse('blue', startHouse);
     centerTokenOnHouse('green', startHouse);
     centerTokenOnHouse('yellow', startHouse);
     
-    updateTurnDisplay(); // Inicializa o painel de ordem
+    updateTurnDisplay(); 
 
     document.querySelectorAll('.drop-target').forEach(house => {
-        // Adiciona listeners de Drag e Drop para as casas
+        // Eventos de mouse já configurados
         house.addEventListener('dragover', handleDragOver);
         house.addEventListener('drop', handleDrop);
         
-        // Adiciona listeners de Toque para as casas (para detectar o fim do movimento touch)
-        // Isso é necessário para que a lógica de "drop" (touchend) funcione corretamente
-        house.addEventListener('touchmove', handleDragOver, { passive: false });
+        // Eventos de Toque
+        house.addEventListener('touchstart', handleDragStart);
+        house.addEventListener('touchmove', handleDragOver);
         house.addEventListener('touchend', handleDrop);
     });
 };
