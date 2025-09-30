@@ -24,7 +24,7 @@ const cards = [
     { type: 'oportunidade', title: 'Saúde Mental', description: 'Você começou a cuidar da saúde mental com acompanhamento psicológico, melhorando seu foco.', move: 2 },
     { type: 'oportunidade', title: 'Rotina Saudável', description: 'Adotou uma rotina saudável que aumentou sua disposição e energia para os estudos e trabalho.', move: 1 },
     
-    // NOVAS CARTAS DE OPORTUNIDADE (AVANÇO DE 2 CASAS)
+    // --- NOVAS CARTAS DE OPORTUNIDADE (AVANÇO DE 2 CASAS) ---
     { type: 'oportunidade', title: 'Aprovação em Curso Extracurricular', description: 'Você se destacou em um curso de idioma ou tecnologia.', move: 2 },
     { type: 'oportunidade', title: 'Bolsa de Iniciação Científica', description: 'Você conseguiu uma bolsa de estudos para participar de um projeto de pesquisa na escola.', move: 2 },
     { type: 'oportunidade', title: 'Reconhecimento Comunitário', description: 'Seu esforço em um projeto social foi reconhecido, abrindo portas para novas parcerias.', move: 2 },
@@ -41,7 +41,7 @@ const cards = [
     { type: 'desafio', title: 'Hora Extra', description: 'Você foi chamado para fazer hora extra no trabalho e não conseguiu estudar para a prova.', move: -2 },
     { type: 'desafio', title: 'Doença Inesperada', description: 'Uma doença inesperada o afastou da escola por alguns dias. Retroceda uma casa para se recuperar totalmente.', move: -1 },
     
-    // NOVAS CARTAS DE DESAFIO (RETROCESSO DE 1 CASA)
+    // --- NOVAS CARTAS DE DESAFIO (RETROCESSO DE 1 CASA) ---
     { type: 'desafio', title: 'Reforma Escolar Atrasada', description: 'A reforma na escola atrasou, causando desorganização e impactando temporariamente seu foco.', move: -1 },
     { type: 'desafio', title: 'Problemas com Documentação', description: 'Houve um problema com sua documentação acadêmica ou profissional. Retroceda uma casa para resolver a situação.', move: -1 }
 ];
@@ -74,7 +74,6 @@ let gameFinished = false;
 
 // VARIÁVEL ADICIONADA: Armazena o índice da última carta sorteada para evitar repetição imediata
 let lastDrawnCardIndex = -1;
-let currentDraggedToken = null; // Rastreia o peão sendo arrastado no toque
 
 const tokenOffsets = {
     'red': { x: -5, y: -5 },
@@ -85,6 +84,7 @@ const tokenOffsets = {
 
 // --- FUNÇÕES DE LÓGICA DE TURNO ---
 
+// Atualiza o display da ordem de jogo
 function updateTurnDisplay() {
     if (turnOrder.length === 0) {
         playerListDisplay.innerHTML = '<p>Arraste os peões para o Início na ordem desejada.</p>';
@@ -107,20 +107,27 @@ function updateTurnDisplay() {
     playerListDisplay.innerHTML = listHtml;
 }
 
+// Passa o turno para o próximo jogador.
 function advanceTurn() {
     if (gameFinished || setupPhase) return;
 
+    // 1. Reinicializa o display para o próximo jogador
     playerToMove = null; 
     drawCardBtn.disabled = true;
 
+    // 2. Avança o índice do jogador
     currentPlayerIndex = (currentPlayerIndex + 1) % turnOrder.length;
     let nextPlayerColor = turnOrder[currentPlayerIndex];
 
+    // 3. Define o próximo jogador que deve iniciar o turno
     playerToMove = nextPlayerColor; 
     updateTurnDisplay();
     currentTurnDisplay.textContent = `Turno: Grupo ${playerToMove.toUpperCase()}`;
     activePlayerInfo.textContent = `Próximo Grupo: Arraste o peão de ${playerToMove.toUpperCase()} para iniciar!`;
 }
+
+
+// --- FUNÇÃO PARA CENTRALIZAR O PEÃO EM UMA CASA (COM CORREÇÃO DE SCROLL) ---
 
 function centerTokenOnHouse(tokenColor, targetHouse) {
     const token = document.getElementById(`player-token-${tokenColor}`);
@@ -131,6 +138,7 @@ function centerTokenOnHouse(tokenColor, targetHouse) {
     const houseRect = targetHouse.getBoundingClientRect();
     const boardRect = gameBoard.getBoundingClientRect();
     
+    // POSIÇÃO CORRIGIDA: Inclui o scrollLeft do gameBoard no cálculo horizontal (X)
     const centerX = (houseRect.left - boardRect.left) + gameBoard.scrollLeft + (houseRect.width / 2); 
     const centerY = houseRect.top - boardRect.top + (houseRect.height / 2);
     
@@ -161,22 +169,25 @@ function drawCardAndMove() {
     currentTurnDisplay.textContent = `Turno do Grupo ${playerColor.toUpperCase()}: Sorteando Carta...`;
     diceResult.textContent = 'Ação: Carta Sorteada';
     
-    // LÓGICA DE SORTEIO DE CARTA (COM PREVENÇÃO DE REPETIÇÃO)
+    // --- LÓGICA DE SORTEIO DE CARTA (COM PREVENÇÃO DE REPETIÇÃO) ---
     let randomIndex;
     let attempts = 0;
     
+    // Sorteia até encontrar um índice que não seja o da última carta
     do {
         randomIndex = Math.floor(Math.random() * cards.length);
         attempts++;
-        if (attempts > 50) break;
+        if (attempts > 50) break; // Prevenção de loop infinito em cenários improváveis
     } while (randomIndex === lastDrawnCardIndex);
 
+    // Atualiza o índice da última carta sorteada
     lastDrawnCardIndex = randomIndex;
     
     const selectedCard = cards[randomIndex];
     let movementText = '';
     
-    // LÓGICA DE MOVIMENTO AUTOMÁTICO
+    // --- LÓGICA DE MOVIMENTO AUTOMÁTICO ---
+    
     if (selectedCard.move !== undefined) {
         let currentPosition = playerPositions[playerColor];
         let newPosition = currentPosition + selectedCard.move;
@@ -197,6 +208,7 @@ function drawCardAndMove() {
         }
     } 
     
+    // Lógica de Perder a Vez (MissTurn foi removido, então este bloco fica vazio)
     let missTurnText = '';
     
     // Aplica o estilo de borda da carta e preenche o conteúdo
@@ -226,49 +238,22 @@ function drawCardAndMove() {
 }
 
 
-// --- FUNÇÕES DRAG AND DROP (MOUSE) E TOUCH (TOQUE) ---
+// --- FUNÇÕES DRAG AND DROP (PARA DEFINIR ORDEM E CONFIRMAR TURNO) ---
 
-// Função auxiliar para obter as coordenadas do evento (seja mouse ou touch)
-function getCoords(e) {
-    return e.touches ? e.touches[0] : e;
-}
-
-// 1. INÍCIO DO ARRASTO (MOUSE: dragstart / TOUCH: touchstart)
 function handleDragStart(e) {
     if (gameFinished) return;
     
-    let targetElement = e.target;
-
-    // Para Toque, precisamos definir o peão que está sendo arrastado
-    if (e.type === 'touchstart') {
-        const touch = getCoords(e);
-        targetElement = touch.target;
-        
-        if (targetElement.classList.contains('player-token')) {
-            currentDraggedToken = targetElement;
-            // **CORREÇÃO APLICADA AQUI:** Previna o comportamento padrão *apenas* se o toque
-            // começar em um peão, garantindo que o scroll funcione em outras áreas.
-            e.preventDefault(); 
-        } else {
-            currentDraggedToken = null;
-            return;
-        }
-    } else {
-        // Se for dragstart, o target já está pronto
-        currentDraggedToken = targetElement;
-    }
-    
-    if (!currentDraggedToken || !currentDraggedToken.classList.contains('player-token')) return;
-
-    const draggedPlayer = currentDraggedToken.getAttribute('data-group');
-    if (e.dataTransfer) e.dataTransfer.setData('text/plain', currentDraggedToken.id);
+    const draggedPlayer = e.target.getAttribute('data-group');
+    e.dataTransfer.setData('text/plain', e.target.id);
     
     if (setupPhase) {
+        // Lógica da fase de configuração
         if (turnOrder.includes(draggedPlayer)) return;
         playerToMove = draggedPlayer;
         
         if (playerPositions[draggedPlayer] === 0) {
             turnOrder.push(draggedPlayer);
+            // missTurnCount[draggedPlayer] = 0; // Não precisa mais inicializar
             updateTurnDisplay();
         }
 
@@ -283,84 +268,31 @@ function handleDragStart(e) {
         }
 
     } else {
+        // Lógica da fase de jogo (apenas confirma o turno)
         const activePlayer = turnOrder[currentPlayerIndex];
         
+        // Somente permite o arrasto se for o peão do jogador da vez
         if (draggedPlayer === activePlayer) {
             playerToMove = draggedPlayer;
             drawCardBtn.disabled = false;
             currentTurnDisplay.textContent = `Turno: Grupo ${playerToMove.toUpperCase()} - PRONTO!`;
         } else {
+            // Se um jogador errado tentou arrastar:
             cardDisplay.innerHTML = `<h2>Atenção!</h2><p>É a vez do **Grupo ${activePlayer.toUpperCase()}**, não do Grupo ${draggedPlayer.toUpperCase()}.</p>`;
             drawCardBtn.disabled = true; 
         }
     }
 }
 
-// 2. MOVIMENTO DO ARRASTO (MOUSE: dragover / TOUCH: touchmove)
 function handleDragOver(e) {
-    // Para mouse, preventDefault é necessário para permitir o drop
-    if (e.type === 'dragover') {
-        e.preventDefault(); 
-    }
-    
-    // Se for toque e houver um token sendo arrastado, mova-o
-    if (e.type === 'touchmove' && currentDraggedToken) {
-        // **CORREÇÃO APLICADA AQUI:** Previna o default no touchmove *apenas* se estiver arrastando um peão
-        e.preventDefault();
-        
-        const touch = getCoords(e);
-        const gameBoard = document.querySelector('.game-board');
-        const boardRect = gameBoard.getBoundingClientRect();
-        
-        let newX = touch.clientX - boardRect.left;
-        let newY = touch.clientY - boardRect.top;
-        
-        // Aplica o offset de scroll
-        newX += gameBoard.scrollLeft;
-        
-        // Centraliza o peão na posição do dedo
-        newX -= currentDraggedToken.offsetWidth / 2;
-        newY -= currentDraggedToken.offsetHeight / 2;
-
-        currentDraggedToken.style.left = `${newX}px`;
-        currentDraggedToken.style.top = `${newY}px`;
-    }
+    e.preventDefault(); 
 }
 
-// 3. FIM DO ARRASTO (MOUSE: drop / TOUCH: touchend)
 function handleDrop(e) {
     e.preventDefault();
-    
-    let targetHouse = null;
-    let originalPlayerToMove = playerToMove;
-
-    if (e.type === 'drop') {
-        targetHouse = e.target.closest('.drop-target');
-        currentDraggedToken = null; 
-
-    } else if (e.type === 'touchend' && currentDraggedToken) {
-        const touch = getCoords(e.changedTouches[0]);
-        const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
-        targetHouse = elementUnderFinger ? elementUnderFinger.closest('.drop-target') : null;
-        
-        // Se o arrasto for cancelado ou não cair em uma casa, reposiciona o peão
-        if (!targetHouse) {
-            // **CORREÇÃO APLICADA AQUI:** Garante que o peão volte à posição central se não cair em uma casa
-            if (originalPlayerToMove) {
-                 centerTokenOnHouse(originalPlayerToMove, houses[playerPositions[originalPlayerToMove]]);
-            }
-        } else {
-            // Se caiu em uma casa válida, definimos o token que foi arrastado para a lógica abaixo
-            const draggedPlayer = currentDraggedToken.getAttribute('data-group');
-            playerToMove = draggedPlayer;
-        }
-        
-        // Reseta o peão rastreado
-        currentDraggedToken = null;
-    }
-    
-    // Lógica de processamento final
-    if (targetHouse && playerToMove) {
+    // Permite o drop apenas se for para confirmar a posição ou na fase inicial
+    if (e.target.classList.contains('drop-target') && playerToMove) {
+        const targetHouse = e.target;
         const targetIndex = parseInt(targetHouse.getAttribute('data-index'));
         
         centerTokenOnHouse(playerToMove, targetHouse);
@@ -373,36 +305,24 @@ function handleDrop(e) {
 
 drawCardBtn.addEventListener('click', drawCardAndMove);
 
-// Eventos de Mouse (Drag and Drop)
 document.addEventListener('dragstart', handleDragStart);
 document.addEventListener('dragover', handleDragOver);
 document.addEventListener('drop', handleDrop);
 
-// Eventos de Toque (Touch)
-// Os eventos touchstart e touchmove estão sem { passive: false } aqui para não bloquear o scroll por padrão
-document.addEventListener('touchstart', handleDragStart); 
-document.addEventListener('touchmove', handleDragOver); 
-document.addEventListener('touchend', handleDrop);
-
 
 window.onload = function() {
     
+    // Posiciona os peões na casa inicial, usando a função de centralização para alinhamento perfeito
     const startHouse = houses[0];
     centerTokenOnHouse('red', startHouse);
     centerTokenOnHouse('blue', startHouse);
     centerTokenOnHouse('green', startHouse);
     centerTokenOnHouse('yellow', startHouse);
     
-    updateTurnDisplay(); 
+    updateTurnDisplay(); // Inicializa o painel de ordem
 
     document.querySelectorAll('.drop-target').forEach(house => {
-        // Eventos de mouse já configurados
         house.addEventListener('dragover', handleDragOver);
         house.addEventListener('drop', handleDrop);
-        
-        // Eventos de Toque
-        house.addEventListener('touchstart', handleDragStart);
-        house.addEventListener('touchmove', handleDragOver);
-        house.addEventListener('touchend', handleDrop);
     });
 };
