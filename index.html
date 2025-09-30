@@ -40,22 +40,30 @@
             
         </div>
 
-        <div class="controls">
-            <button id="draw-card-btn">Sortear Carta</button>
+        <div class="info-panels">
+            <div class="turn-order-panel" id="turn-order-panel">
+                <h4>Ordem de Jogo</h4>
+                <div id="player-list">
+                    <p>Definindo a ordem...</p>
+                </div>
+            </div>
             
-            <p id="dice-result">Ação: Aguardando</p>
-            <p id="current-turn">Turno: Início</p>
-            <p id="active-player-info">Próximo Grupo: Nenhum</p>
+            <div class="controls">
+                <button id="draw-card-btn" disabled>Sortear Carta</button>
+                
+                <p id="dice-result">Ação: Aguardando</p>
+                <p id="current-turn">Turno: Início</p>
+                <p id="active-player-info">Próximo Grupo: Nenhum</p>
+            </div>
         </div>
 
-        <div class="card-display" id="card-display" style="display:none;">
-            <h2 id="card-title"></h2>
-            <p id="card-description"></p>
-            <p id="card-move-info"></p>
-        </div>
 
+        <div class="card-display" id="card-display">
+            <h2>Bem-vindo à Jornada!</h2>
+            <p>Para começar, cada grupo deve arrastar seu peão para a casa 'Início' na ordem em que deseja jogar. A ordem de jogo será definida na primeira rodada.</p>
+        </div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
