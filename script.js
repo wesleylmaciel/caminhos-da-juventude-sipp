@@ -80,10 +80,8 @@ const tokenOffsets = {
     'yellow': { x: 5, y: 5 }
 };
 
-// Variáveis para suportar o TOUCH
+// Variável para rastrear o peão que está sendo arrastado ou tocado
 let draggedToken = null; 
-let initialX, initialY;
-let currentTokenTransformX, currentTokenTransformY;
 
 // --- FUNÇÕES DE LÓGICA DE TURNO ---
 
@@ -202,43 +200,19 @@ function centerTokenOnHouse(playerColor, houseElement) {
     const offsetX = tokenOffsets[playerColor].x;
     const offsetY = tokenOffsets[playerColor].y;
     
+    // Calcula a posição absoluta no board
     const x = (rect.left - boardRect.left) + (rect.width / 2) - (token.offsetWidth / 2) + offsetX;
     const y = (rect.top - boardRect.top) + (rect.height / 2) - (token.offsetHeight / 2) + offsetY;
 
     token.style.transform = `translate(${x}px, ${y}px)`;
 }
 
-// --- DRAG and DROP (Desktop) ---
+// --- FUNÇÃO DE DROP (Usada por Drag e Touch) ---
+function finalizeDrop(playerColor, dropTarget) {
+    const startHouse = houses[0];
 
-function handleDragStart(e) {
-    if (!setupPhase) return;
-    const playerColor = e.target.getAttribute('data-group');
-    e.dataTransfer.setData('text/plain', playerColor);
-    e.dataTransfer.effectAllowed = 'move';
-    e.target.classList.add('dragging');
-}
-
-function handleDragOver(e) {
-    if (!setupPhase) return;
-    e.preventDefault(); 
-    if (e.currentTarget.classList.contains('drop-target')) {
-        e.dataTransfer.dropEffect = 'move';
-    }
-}
-
-function handleDrop(e) {
-    if (!setupPhase) return;
-    e.preventDefault();
-    e.target.classList.remove('drag-over');
-    
-    // Obtém a cor do peão. Para drop, a cor vem do dataTransfer.
-    const playerColor = e.dataTransfer ? e.dataTransfer.getData('text/plain') : draggedToken ? draggedToken.getAttribute('data-group') : null;
-    const token = playerColor ? document.getElementById(`player-token-${playerColor}`) : null;
-    
-    if (!playerColor || !token) return;
-
-    // Verifica se o drop ocorreu na casa de Início
-    if (e.currentTarget.getAttribute('data-index') === '0') {
+    // Verifica se o elemento de soltura (ou um de seus pais) é a casa de Início
+    if (dropTarget && (dropTarget === startHouse || startHouse.contains(dropTarget))) {
         
         if (!turnOrder.includes(playerColor)) {
             turnOrder.push(playerColor);
@@ -255,7 +229,42 @@ function handleDrop(e) {
             currentTurnDisplay.textContent = 'Turno: Jogo Iniciado';
             updateTurnDisplay();
         }
+    } else {
+        // Retorna o peão para a posição inicial se o drop falhar
+        centerTokenOnHouse(playerColor, houses[0]);
     }
+}
+
+// --- DRAG and DROP (Desktop) ---
+
+function handleDragStart(e) {
+    if (!setupPhase) return;
+    const playerColor = e.target.getAttribute('data-group');
+    e.dataTransfer.setData('text/plain', playerColor);
+    e.dataTransfer.effectAllowed = 'move';
+    e.target.classList.add('dragging');
+    draggedToken = e.target; // Define para que o handleDragEnd possa limpar
+}
+
+function handleDragOver(e) {
+    if (!setupPhase) return;
+    e.preventDefault(); 
+    if (e.currentTarget.classList.contains('drop-target')) {
+        e.dataTransfer.dropEffect = 'move';
+    }
+}
+
+function handleDrop(e) {
+    if (!setupPhase) return;
+    e.preventDefault();
+    e.target.classList.remove('drag-over');
+    
+    // A cor vem do dataTransfer para o Desktop
+    const playerColor = e.dataTransfer.getData('text/plain');
+    const token = document.getElementById(`player-token-${playerColor}`);
+    
+    finalizeDrop(playerColor, e.currentTarget);
+    
     if (token) {
         token.classList.remove('dragging');
     }
@@ -264,33 +273,34 @@ function handleDrop(e) {
 // --- TOUCH EVENTS (Mobile) ---
 
 function getTouchPos(e) {
-    // Retorna a posição do primeiro toque
     const touch = e.touches[0] || e.changedTouches[0];
     return { x: touch.clientX, y: touch.clientY };
 }
 
-function getTranslateXY(element) {
-    const style = window.getComputedStyle(element);
-    const matrix = new DOMMatrixReadOnly(style.transform);
-    return { x: matrix.m41, y: matrix.m42 };
+function getCenterHousePosition(houseElement) {
+    const rect = houseElement.getBoundingClientRect();
+    const boardRect = document.querySelector('.game-board').getBoundingClientRect();
+    const x = (rect.left - boardRect.left) + (rect.width / 2);
+    const y = (rect.top - boardRect.top) + (rect.height / 2);
+    return { x, y };
 }
 
 function handleTouchStart(e) {
-    if (!setupPhase || e.target.classList.contains('house')) return;
+    if (!setupPhase || !e.target.classList.contains('player-token')) return;
 
-    e.preventDefault(); // Impede o scroll e outros comportamentos padrão
-
+    e.preventDefault();
     draggedToken = e.target;
     draggedToken.classList.add('dragging');
 
-    const touchPos = getTouchPos(e);
-    initialX = touchPos.x;
-    initialY = touchPos.y;
+    // Captura a posição de início do toque no peão
+    const tokenRect = draggedToken.getBoundingClientRect();
+    draggedToken.offsetX = getTouchPos(e).x - tokenRect.left;
+    draggedToken.offsetY = getTouchPos(e).y - tokenRect.top;
 
-    // Captura a transformação atual para calcular o offset
-    const currentTransform = getTranslateXY(draggedToken);
-    currentTokenTransformX = currentTransform.x;
-    currentTokenTransformY = currentTransform.y;
+    // Define a posição absoluta (necessário para o touchmove funcionar bem no mobile)
+    draggedToken.style.position = 'absolute';
+    draggedToken.style.top = '0px';
+    draggedToken.style.left = '0px';
 }
 
 function handleTouchMove(e) {
@@ -299,11 +309,14 @@ function handleTouchMove(e) {
     e.preventDefault();
 
     const touchPos = getTouchPos(e);
-    const dx = touchPos.x - initialX;
-    const dy = touchPos.y - initialY;
+    const boardRect = document.querySelector('.game-board').getBoundingClientRect();
 
-    // Move o token visualmente
-    draggedToken.style.transform = `translate(${currentTokenTransformX + dx}px, ${currentTokenTransformY + dy}px)`;
+    // Calcula a nova posição relativa ao game-board
+    let newX = touchPos.x - boardRect.left - draggedToken.offsetX;
+    let newY = touchPos.y - boardRect.top - draggedToken.offsetY;
+    
+    // Aplica a transformação de posição
+    draggedToken.style.transform = `translate(${newX}px, ${newY}px)`;
 }
 
 function handleTouchEnd(e) {
@@ -311,26 +324,21 @@ function handleTouchEnd(e) {
 
     e.preventDefault();
 
+    const playerColor = draggedToken.getAttribute('data-group');
     const touch = e.changedTouches[0];
-    // Ponto de onde o peão foi solto
+    
+    // Usa document.elementFromPoint para ver onde o peão foi solto
     const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-
-    // Se o elemento de soltura for a casa de Início (data-index="0"), finalize o drop.
-    const startHouse = houses[0];
-    if (dropTarget && (dropTarget === startHouse || startHouse.contains(dropTarget))) {
-        
-        // Simula o evento de drop na casa inicial
-        handleDrop({ currentTarget: startHouse, preventDefault: () => {} });
-
-    } else {
-        // Se soltar em outro lugar, move o peão de volta para a posição inicial (já coberta pelo centerTokenOnHouse no onload)
-        const playerColor = draggedToken.getAttribute('data-group');
-        centerTokenOnHouse(playerColor, houses[0]);
-    }
+    
+    // Finaliza o drop
+    finalizeDrop(playerColor, dropTarget);
     
     // Limpeza
     draggedToken.classList.remove('dragging');
     draggedToken = null;
+    
+    // Reinicia a posição do peão para o esquema de transform original
+    centerTokenOnHouse(playerColor, houses[0]); 
 }
 
 // --- INICIALIZAÇÃO E LISTENERS ---
@@ -356,7 +364,10 @@ window.onload = function() {
     // Adiciona LISTENERS para DESKTOP (Drag and Drop)
     document.querySelectorAll('.player-token').forEach(token => {
         token.addEventListener('dragstart', handleDragStart);
-        token.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
+        token.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+            draggedToken = null;
+        });
     });
 
     // Adiciona LISTENERS para o DROP TARGET (Casa Início)
@@ -367,7 +378,6 @@ window.onload = function() {
 
     // Adiciona LISTENERS para TOUCH (Mobile)
     document.querySelectorAll('.player-token').forEach(token => {
-        // Adiciona touchstart para começar o arraste no peão
         token.addEventListener('touchstart', handleTouchStart);
     });
     // Adiciona touchmove e touchend ao corpo para rastrear o movimento em qualquer lugar da tela
