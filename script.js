@@ -53,12 +53,9 @@ const houses = document.querySelectorAll('.house');
 const drawCardBtn = document.getElementById('draw-card-btn');
 const diceResult = document.getElementById('dice-result');
 const cardDisplay = document.getElementById('card-display');
-const cardImagePlaceholder = document.querySelector('.card-image-placeholder'); 
 const currentTurnDisplay = document.getElementById('current-turn');
 const activePlayerInfo = document.getElementById('active-player-info');
 const playerListDisplay = document.getElementById('player-list');
-
-// O restante do código de estado, turnos e funções de D&D...
 
 const playerPositions = {
     'red': 0,
@@ -82,7 +79,11 @@ const tokenOffsets = {
     'green': { x: -5, y: 5 },
     'yellow': { x: 5, y: 5 }
 };
+
+// Variáveis para suportar o TOUCH
 let draggedToken = null; 
+let initialX, initialY;
+let currentTokenTransformX, currentTokenTransformY;
 
 // --- FUNÇÕES DE LÓGICA DE TURNO ---
 
@@ -147,7 +148,6 @@ function drawCardAndMove() {
     cardDisplay.classList.remove('oportunidade', 'desafio');
     cardDisplay.classList.add(card.type);
 
-    // NOVO: Aplica a imagem de fundo específica da carta (USANDO O imageFile)
     const cardImagePlaceholder = document.querySelector('.card-image-placeholder');
     if(cardImagePlaceholder) {
         cardImagePlaceholder.style.backgroundImage = `url('img/${card.imageFile}')`;
@@ -193,7 +193,7 @@ function drawCardAndMove() {
     }, 2500); // 2.5 segundos para a leitura da carta
 }
 
-// --- FUNÇÕES DE INTERAÇÃO E VISUAIS (o restante das funções) ---
+// --- FUNÇÕES DE INTERAÇÃO E VISUAIS ---
 
 function centerTokenOnHouse(playerColor, houseElement) {
     const token = document.getElementById(`player-token-${playerColor}`);
@@ -207,6 +207,8 @@ function centerTokenOnHouse(playerColor, houseElement) {
 
     token.style.transform = `translate(${x}px, ${y}px)`;
 }
+
+// --- DRAG and DROP (Desktop) ---
 
 function handleDragStart(e) {
     if (!setupPhase) return;
@@ -229,49 +231,116 @@ function handleDrop(e) {
     e.preventDefault();
     e.target.classList.remove('drag-over');
     
-    if (e.currentTarget.classList.contains('drop-target')) {
-        const playerColor = e.dataTransfer.getData('text/plain');
-        const token = document.getElementById(`player-token-${playerColor}`);
+    // Obtém a cor do peão. Para drop, a cor vem do dataTransfer.
+    const playerColor = e.dataTransfer ? e.dataTransfer.getData('text/plain') : draggedToken ? draggedToken.getAttribute('data-group') : null;
+    const token = playerColor ? document.getElementById(`player-token-${playerColor}`) : null;
+    
+    if (!playerColor || !token) return;
 
-        if (e.currentTarget.getAttribute('data-index') === '0') {
-            
-            if (!turnOrder.includes(playerColor)) {
-                turnOrder.push(playerColor);
-            }
-
-            centerTokenOnHouse(playerColor, houses[0]);
-
-            updateTurnDisplay();
-            
-            if (turnOrder.length === allPlayers.length) {
-                setupPhase = false;
-                playerToMove = turnOrder[currentPlayerIndex];
-                drawCardBtn.disabled = false;
-                currentTurnDisplay.textContent = 'Turno: Jogo Iniciado';
-                updateTurnDisplay();
-            }
+    // Verifica se o drop ocorreu na casa de Início
+    if (e.currentTarget.getAttribute('data-index') === '0') {
+        
+        if (!turnOrder.includes(playerColor)) {
+            turnOrder.push(playerColor);
         }
+
+        centerTokenOnHouse(playerColor, houses[0]);
+
+        updateTurnDisplay();
+        
+        if (turnOrder.length === allPlayers.length) {
+            setupPhase = false;
+            playerToMove = turnOrder[currentPlayerIndex];
+            drawCardBtn.disabled = false;
+            currentTurnDisplay.textContent = 'Turno: Jogo Iniciado';
+            updateTurnDisplay();
+        }
+    }
+    if (token) {
         token.classList.remove('dragging');
     }
 }
 
-// --- EVENT LISTENERS ---
+// --- TOUCH EVENTS (Mobile) ---
+
+function getTouchPos(e) {
+    // Retorna a posição do primeiro toque
+    const touch = e.touches[0] || e.changedTouches[0];
+    return { x: touch.clientX, y: touch.clientY };
+}
+
+function getTranslateXY(element) {
+    const style = window.getComputedStyle(element);
+    const matrix = new DOMMatrixReadOnly(style.transform);
+    return { x: matrix.m41, y: matrix.m42 };
+}
+
+function handleTouchStart(e) {
+    if (!setupPhase || e.target.classList.contains('house')) return;
+
+    e.preventDefault(); // Impede o scroll e outros comportamentos padrão
+
+    draggedToken = e.target;
+    draggedToken.classList.add('dragging');
+
+    const touchPos = getTouchPos(e);
+    initialX = touchPos.x;
+    initialY = touchPos.y;
+
+    // Captura a transformação atual para calcular o offset
+    const currentTransform = getTranslateXY(draggedToken);
+    currentTokenTransformX = currentTransform.x;
+    currentTokenTransformY = currentTransform.y;
+}
+
+function handleTouchMove(e) {
+    if (!setupPhase || !draggedToken) return;
+
+    e.preventDefault();
+
+    const touchPos = getTouchPos(e);
+    const dx = touchPos.x - initialX;
+    const dy = touchPos.y - initialY;
+
+    // Move o token visualmente
+    draggedToken.style.transform = `translate(${currentTokenTransformX + dx}px, ${currentTokenTransformY + dy}px)`;
+}
+
+function handleTouchEnd(e) {
+    if (!setupPhase || !draggedToken) return;
+
+    e.preventDefault();
+
+    const touch = e.changedTouches[0];
+    // Ponto de onde o peão foi solto
+    const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    // Se o elemento de soltura for a casa de Início (data-index="0"), finalize o drop.
+    const startHouse = houses[0];
+    if (dropTarget && (dropTarget === startHouse || startHouse.contains(dropTarget))) {
+        
+        // Simula o evento de drop na casa inicial
+        handleDrop({ currentTarget: startHouse, preventDefault: () => {} });
+
+    } else {
+        // Se soltar em outro lugar, move o peão de volta para a posição inicial (já coberta pelo centerTokenOnHouse no onload)
+        const playerColor = draggedToken.getAttribute('data-group');
+        centerTokenOnHouse(playerColor, houses[0]);
+    }
+    
+    // Limpeza
+    draggedToken.classList.remove('dragging');
+    draggedToken = null;
+}
+
+// --- INICIALIZAÇÃO E LISTENERS ---
 
 drawCardBtn.addEventListener('click', drawCardAndMove);
 
-document.querySelectorAll('.player-token').forEach(token => {
-    token.addEventListener('dragstart', handleDragStart);
-    token.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
-});
-
-document.querySelectorAll('.drop-target').forEach(house => {
-    house.addEventListener('dragover', handleDragOver);
-    house.addEventListener('drop', handleDrop);
-});
-
-
 window.onload = function() {
     const startHouse = houses[0];
+    
+    // Posição inicial dos peões
     centerTokenOnHouse('red', startHouse);
     centerTokenOnHouse('blue', startHouse);
     centerTokenOnHouse('green', startHouse);
@@ -284,8 +353,24 @@ window.onload = function() {
     
     updateTurnDisplay(); 
 
+    // Adiciona LISTENERS para DESKTOP (Drag and Drop)
+    document.querySelectorAll('.player-token').forEach(token => {
+        token.addEventListener('dragstart', handleDragStart);
+        token.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
+    });
+
+    // Adiciona LISTENERS para o DROP TARGET (Casa Início)
     document.querySelectorAll('.drop-target').forEach(house => {
         house.addEventListener('dragover', handleDragOver);
         house.addEventListener('drop', handleDrop);
     });
+
+    // Adiciona LISTENERS para TOUCH (Mobile)
+    document.querySelectorAll('.player-token').forEach(token => {
+        // Adiciona touchstart para começar o arraste no peão
+        token.addEventListener('touchstart', handleTouchStart);
+    });
+    // Adiciona touchmove e touchend ao corpo para rastrear o movimento em qualquer lugar da tela
+    document.body.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.body.addEventListener('touchend', handleTouchEnd);
 };
