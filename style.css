@@ -2,39 +2,42 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    /* Alinha o conteúdo no topo para sobrar espaço embaixo, se necessário */
     align-items: flex-start; 
     height: 100vh;
     margin: 0;
-    background-color: #f0f4f8; 
+    /* Fundo que se adapta ao tabuleiro */
+    background-image: url('img/fundo-tabuleiro.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    
     padding: 20px;
-    box-sizing: border-box; /* Garante que o padding não cause scroll */
+    box-sizing: border-box; 
 }
 
 .container {
-    /* Aumentamos a largura para acomodar o tabuleiro e os painéis laterais */
     max-width: 1200px; 
     width: 95%;
     text-align: center;
-    background: #fff;
+    /* Fundo MUITO mais translúcido (branco com 30% de opacidade) */
+    background: rgba(255, 255, 255, 0.3); 
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); 
     
-    /* Novo layout Grid para organizar Tabuleiro, Controles e Cartas */
     display: grid;
-    /* Define 3 colunas: 1. Controles | 2. Tabuleiro (maior) | 3. Cartas */
     grid-template-columns: 250px 1fr 350px; 
     grid-template-areas: 
         "header header header"
         "controls board card-display"
         "player-list board card-display";
-    gap: 20px; /* Espaçamento entre os elementos do grid */
+    gap: 20px;
 }
 
 h1 {
     color: #334e68;
-    grid-area: header; /* O cabeçalho ocupa todas as 3 colunas */
+    grid-area: header;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.9); 
 }
 
 /* ------------------------------------------------ */
@@ -42,21 +45,17 @@ h1 {
 /* ------------------------------------------------ */
 
 .game-board {
-    grid-area: board; /* Ocupa a área central e define o grid da cobrinha */
+    grid-area: board; 
     display: grid; 
-    /* Define 5 colunas de tamanho igual (para 3 casas por linha) */
     grid-template-columns: repeat(5, 1fr); 
-    /* Define o número de linhas baseado no número total de casas (15) */
     grid-template-rows: repeat(3, 80px); 
-    /* Gap entre as casas (como o caminho da cobrinha) */
     gap: 15px; 
     margin: 0;
     position: relative;
-    border: none; /* Remove a borda anterior */
+    border: none;
     padding: 5px;
-    min-height: 270px; /* Altura mínima para as 3 linhas + gaps */
+    min-height: 270px;
     width: 100%;
-    /* Remove o scroll horizontal */
     overflow-x: hidden; 
 }
 
@@ -67,46 +66,37 @@ h1 {
     align-items: center;
     text-align: center;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(255, 255, 255, 0.5);
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     padding: 5px;
     box-sizing: border-box;
     position: relative;
     cursor: grab;
     transition: transform 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+    color: #333; 
 }
 
-/* ------------------------------------------------ */
-/* AJUSTES DAS CASAS PARA O FORMATO COBRINHA        */
-/* ------------------------------------------------ */
-
-/* Linha 1: Casas 0 a 4 (Esquerda para Direita) */
-.house[data-index="0"], .house[data-index="1"], .house[data-index="2"], .house[data-index="3"], .house[data-index="4"] {
-    grid-row: 1;
-}
-
-/* Linha 2: Casas 5 a 9 (Direita para Esquerda) */
+/* AJUSTES DAS CASAS PARA O FORMATO COBRINHA */
+.house[data-index="0"], .house[data-index="1"], .house[data-index="2"], .house[data-index="3"], .house[data-index="4"] { grid-row: 1; }
 .house[data-index="5"] { grid-column: 5; grid-row: 2; }
 .house[data-index="6"] { grid-column: 4; grid-row: 2; }
 .house[data-index="7"] { grid-column: 3; grid-row: 2; }
 .house[data-index="8"] { grid-column: 2; grid-row: 2; }
 .house[data-index="9"] { grid-column: 1; grid-row: 2; }
+.house[data-index="10"], .house[data-index="11"], .house[data-index="12"], .house[data-index="13"], .house[data-index="14"] { grid-row: 3; }
 
-/* Linha 3: Casas 10 a 14 (Esquerda para Direita) */
-.house[data-index="10"], .house[data-index="11"], .house[data-index="12"], .house[data-index="13"], .house[data-index="14"] {
-    grid-row: 3;
-}
+/* Estilos para as fases do jogo com fundo MUITO mais translúcido (20% de opacidade) */
+.fund-i { background: rgba(209, 231, 221, 0.2); } 
+.fund-ii { background: rgba(255, 243, 205, 0.2); }
+.medio { background: rgba(204, 229, 255, 0.2); }
+.trabalho { background: rgba(212, 237, 218, 0.2); }
 
-/* Estilos para as fases do jogo */
-.fund-i { background-color: #d1e7dd; } /* Verde Claro */
-.fund-ii { background-color: #fff3cd; } /* Amarelo Claro */
-.medio { background-color: #cce5ff; } /* Azul Claro */
-.trabalho { background-color: #d4edda; } /* Verde-água */
-.start { background-color: #1a75ff; color: white; }
+/* Início e Fim mantêm menos transparência para destaque */
+.start { background-color: rgba(26, 117, 255, 0.7); color: white; }
 .end { 
-    background-color: gold; 
+    background-color: rgba(255, 215, 0, 0.8);
     color: #333; 
     font-size: 14px;
     font-weight: bold;
@@ -125,15 +115,22 @@ h1 {
     border: 2px solid white;
     cursor: grab;
     z-index: 10; 
-    /* Estes estilos 'left' e 'top' serão sobrescritos pelo JavaScript */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Animação de movimento */
 }
 
 .controls {
-    grid-area: controls; /* Ocupa a coluna da esquerda, acima da lista de jogadores */
+    grid-area: controls;
     text-align: left;
     padding-right: 15px;
-    border-right: 1px solid #eee;
+    border-right: 1px solid rgba(238, 238, 238, 0.3);
+}
+
+.controls, .turn-order-panel {
+    /* Fundo branco super transparente (30% de opacidade) */
+    background: rgba(255, 255, 255, 0.3); 
+    padding: 10px;
+    border-radius: 5px;
 }
 
 #draw-card-btn {
@@ -148,28 +145,20 @@ h1 {
     width: 100%;
 }
 
-#draw-card-btn:hover:not(:disabled) {
-    background-color: #e0a800;
-}
-
-#draw-card-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
+#draw-card-btn:hover:not(:disabled) { background-color: #e0a800; }
+#draw-card-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
 #dice-result, #current-turn, #active-player-info {
     font-size: 14px;
     margin: 5px 0;
-    color: #555;
-    font-weight: 500;
+    color: #333; 
+    font-weight: 600;
 }
 
-/* Estilos para a lista de jogadores */
 #player-list {
-    grid-area: player-list; /* Ocupa a coluna da esquerda, abaixo dos controles */
+    grid-area: player-list;
     text-align: left;
     padding-right: 15px;
-    border-right: 1px solid #eee;
     margin-top: 15px;
 }
 
@@ -183,48 +172,64 @@ h1 {
 #player-list p.is-active {
     font-weight: bold;
     border-left: 5px solid #ffc107;
-    background-color: #fff8e1;
+    /* Fundo ativo mais transparente (20% de opacidade) */
+    background-color: rgba(255, 248, 225, 0.2); 
 }
 
 /* Estilos de exibição da Carta */
 .card-display {
-    grid-area: card-display; /* Ocupa a coluna da direita */
-    background: #f8f9fa;
+    grid-area: card-display; 
+    /* Fundo translúcido para a carta (50% de opacidade) */
+    background: rgba(248, 249, 250, 0.5);
     border-radius: 10px;
     padding: 20px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     text-align: left;
-    border: 3px solid #ccc;
-    transition: border-color 0.5s;
+    border: 3px solid rgba(204, 204, 204, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+/* NOVO: Estilo para o placeholder da imagem da carta */
+.card-image-placeholder {
+    width: 100%;
+    height: 150px; 
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    /* O background-image: url() será definido via JavaScript */
+    background-color: #e9ecef; /* Cor de fundo padrão se a imagem não carregar */
 }
 
 .card-display h2, .card-display h3, .card-display h4 {
     margin-top: 0;
 }
 
+/* Ajustes de cor de fundo e borda para o display da carta */
 .card-display.oportunidade {
-    border-color: #28a745; /* Borda Verde para Oportunidade */
-    background-color: #e6ffed;
+    border-color: #28a745; 
+    background-color: rgba(230, 255, 237, 0.4); 
 }
 
 .card-display.desafio {
-    border-color: #dc3545; /* Borda Vermelha para Desafio */
-    background-color: #fcebeb;
+    border-color: #dc3545; 
+    background-color: rgba(252, 235, 235, 0.4); 
 }
 
 .reflection-prompt {
     margin-top: 15px;
     padding-top: 10px;
-    border-top: 1px dashed #ccc;
+    border-top: 1px dashed rgba(51, 51, 51, 0.5); 
     font-style: italic;
-    color: #6c757d;
+    color: #495057; 
     font-size: 0.9em;
 }
 
-/* Responsividade básica para telas menores */
 @media (max-width: 900px) {
     .container {
-        /* Muda para uma única coluna em telas menores */
         grid-template-columns: 1fr;
         grid-template-areas: 
             "header"
@@ -235,7 +240,6 @@ h1 {
     }
 
     .game-board {
-        /* Aumenta as casas para ficarem mais visíveis em uma largura menor */
         grid-template-columns: repeat(5, 1fr); 
         grid-template-rows: repeat(3, 70px); 
     }
