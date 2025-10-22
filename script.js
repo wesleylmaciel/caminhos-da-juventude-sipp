@@ -65,33 +65,25 @@ const playerPositions = {
 };
 
 const allPlayers = ['red', 'blue', 'green', 'yellow'];
-let turnOrder = []; 
+
+// ORDEM DE JOGO FIXA: Blue, Red, Green, Yellow
+let turnOrder = ['blue', 'red', 'green', 'yellow']; 
 let missTurnCount = {}; 
 let currentPlayerIndex = 0;
-let setupPhase = true; 
-let playerToMove = null;
+let playerToMove = turnOrder[currentPlayerIndex]; // O primeiro jogador é definido
 let gameFinished = false; 
 let lastDrawnCardIndex = -1;
 
 const tokenOffsets = {
-    'red': { x: -5, y: -5 },
-    'blue': { x: 5, y: -5 },
-    'green': { x: -5, y: 5 },
-    'yellow': { x: 5, y: 5 }
+    'red': { x: 5, y: -5 }, // Ajuste para melhor visualização na Casa Início
+    'blue': { x: -5, y: -5 },
+    'green': { x: 5, y: 5 },
+    'yellow': { x: -5, y: 5 }
 };
-
-// Variável para rastrear o peão que está sendo arrastado ou tocado
-let draggedToken = null; 
 
 // --- FUNÇÕES DE LÓGICA DE TURNO ---
 
 function updateTurnDisplay() {
-    if (turnOrder.length === 0) {
-        playerListDisplay.innerHTML = '<p>Arraste os peões para o Início na ordem desejada.</p>';
-        activePlayerInfo.textContent = 'Próximo Grupo: Nenhum (Defina a ordem)';
-        return;
-    }
-
     let listHtml = '';
     turnOrder.forEach((playerColor, index) => {
         let classes = '';
@@ -105,17 +97,23 @@ function updateTurnDisplay() {
 }
 
 function advanceTurn() {
-    if (gameFinished || setupPhase) return;
-    playerToMove = null;
+    if (gameFinished) return;
+    
+    // Desabilita o botão para evitar cliques múltiplos durante a transição
     drawCardBtn.disabled = true;
+
+    // Avança para o próximo jogador
     currentPlayerIndex = (currentPlayerIndex + 1) % turnOrder.length;
     let nextPlayerColor = turnOrder[currentPlayerIndex];
 
     if (missTurnCount[nextPlayerColor] > 0) {
         missTurnCount[nextPlayerColor]--;
         currentTurnDisplay.textContent = `Turno de ${nextPlayerColor.toUpperCase()} - PULA VEZ! Faltam ${missTurnCount[nextPlayerColor]} turnos.`;
+        
+        // Se ainda tiver que pular, avança o turno automaticamente
         setTimeout(advanceTurn, 2000); 
     } else {
+        // Habilita o botão para o novo jogador
         playerToMove = nextPlayerColor;
         drawCardBtn.disabled = false; 
         updateTurnDisplay();
@@ -133,7 +131,7 @@ function getRandomCardIndex() {
 
 // Lógica principal do jogo: Sortear carta, exibir e mover o peão.
 function drawCardAndMove() {
-    if (gameFinished || setupPhase || !playerToMove) return;
+    if (gameFinished || !playerToMove) return;
 
     drawCardBtn.disabled = true;
 
@@ -169,6 +167,7 @@ function drawCardAndMove() {
         // MOVIMENTO
         let newPosition = playerPositions[playerColor] + moveDistance;
         
+        // Garante que a posição esteja dentro dos limites do tabuleiro (0 a totalHouses - 1)
         newPosition = Math.max(0, Math.min(totalHouses - 1, newPosition));
 
         playerPositions[playerColor] = newPosition;
@@ -178,6 +177,7 @@ function drawCardAndMove() {
 
         diceResult.textContent = `Ação: ${card.type === 'oportunidade' ? 'AVANÇOU' : 'RETROCEDEU'} ${Math.abs(moveDistance)} casas.`;
 
+        // Verifica se o jogo acabou
         if (newPosition === totalHouses - 1) {
             alert(`FIM DE JOGO! O grupo ${playerColor.toUpperCase()} chegou à VITÓRIA!`);
             gameFinished = true;
@@ -186,12 +186,13 @@ function drawCardAndMove() {
             return;
         }
 
+        // Passa para o próximo turno
         advanceTurn();
 
     }, 2500); // 2.5 segundos para a leitura da carta
 }
 
-// --- FUNÇÕES DE INTERAÇÃO E VISUAIS ---
+// --- FUNÇÃO VISUAL: Posiciona o Peão ---
 
 function centerTokenOnHouse(playerColor, houseElement) {
     const token = document.getElementById(`player-token-${playerColor}`);
@@ -207,140 +208,6 @@ function centerTokenOnHouse(playerColor, houseElement) {
     token.style.transform = `translate(${x}px, ${y}px)`;
 }
 
-// --- FUNÇÃO DE DROP (Usada por Drag e Touch) ---
-function finalizeDrop(playerColor, dropTarget) {
-    const startHouse = houses[0];
-
-    // Verifica se o elemento de soltura (ou um de seus pais) é a casa de Início
-    if (dropTarget && (dropTarget === startHouse || startHouse.contains(dropTarget))) {
-        
-        if (!turnOrder.includes(playerColor)) {
-            turnOrder.push(playerColor);
-        }
-
-        centerTokenOnHouse(playerColor, houses[0]);
-
-        updateTurnDisplay();
-        
-        if (turnOrder.length === allPlayers.length) {
-            setupPhase = false;
-            playerToMove = turnOrder[currentPlayerIndex];
-            drawCardBtn.disabled = false;
-            currentTurnDisplay.textContent = 'Turno: Jogo Iniciado';
-            updateTurnDisplay();
-        }
-    } else {
-        // Retorna o peão para a posição inicial se o drop falhar
-        centerTokenOnHouse(playerColor, houses[0]);
-    }
-}
-
-// --- DRAG and DROP (Desktop) ---
-
-function handleDragStart(e) {
-    if (!setupPhase) return;
-    const playerColor = e.target.getAttribute('data-group');
-    e.dataTransfer.setData('text/plain', playerColor);
-    e.dataTransfer.effectAllowed = 'move';
-    e.target.classList.add('dragging');
-    draggedToken = e.target; // Define para que o handleDragEnd possa limpar
-}
-
-function handleDragOver(e) {
-    if (!setupPhase) return;
-    e.preventDefault(); 
-    if (e.currentTarget.classList.contains('drop-target')) {
-        e.dataTransfer.dropEffect = 'move';
-    }
-}
-
-function handleDrop(e) {
-    if (!setupPhase) return;
-    e.preventDefault();
-    e.target.classList.remove('drag-over');
-    
-    // A cor vem do dataTransfer para o Desktop
-    const playerColor = e.dataTransfer.getData('text/plain');
-    const token = document.getElementById(`player-token-${playerColor}`);
-    
-    finalizeDrop(playerColor, e.currentTarget);
-    
-    if (token) {
-        token.classList.remove('dragging');
-    }
-}
-
-// --- TOUCH EVENTS (Mobile) ---
-
-function getTouchPos(e) {
-    const touch = e.touches[0] || e.changedTouches[0];
-    return { x: touch.clientX, y: touch.clientY };
-}
-
-function getCenterHousePosition(houseElement) {
-    const rect = houseElement.getBoundingClientRect();
-    const boardRect = document.querySelector('.game-board').getBoundingClientRect();
-    const x = (rect.left - boardRect.left) + (rect.width / 2);
-    const y = (rect.top - boardRect.top) + (rect.height / 2);
-    return { x, y };
-}
-
-function handleTouchStart(e) {
-    if (!setupPhase || !e.target.classList.contains('player-token')) return;
-
-    e.preventDefault();
-    draggedToken = e.target;
-    draggedToken.classList.add('dragging');
-
-    // Captura a posição de início do toque no peão
-    const tokenRect = draggedToken.getBoundingClientRect();
-    draggedToken.offsetX = getTouchPos(e).x - tokenRect.left;
-    draggedToken.offsetY = getTouchPos(e).y - tokenRect.top;
-
-    // Define a posição absoluta (necessário para o touchmove funcionar bem no mobile)
-    draggedToken.style.position = 'absolute';
-    draggedToken.style.top = '0px';
-    draggedToken.style.left = '0px';
-}
-
-function handleTouchMove(e) {
-    if (!setupPhase || !draggedToken) return;
-
-    e.preventDefault();
-
-    const touchPos = getTouchPos(e);
-    const boardRect = document.querySelector('.game-board').getBoundingClientRect();
-
-    // Calcula a nova posição relativa ao game-board
-    let newX = touchPos.x - boardRect.left - draggedToken.offsetX;
-    let newY = touchPos.y - boardRect.top - draggedToken.offsetY;
-    
-    // Aplica a transformação de posição
-    draggedToken.style.transform = `translate(${newX}px, ${newY}px)`;
-}
-
-function handleTouchEnd(e) {
-    if (!setupPhase || !draggedToken) return;
-
-    e.preventDefault();
-
-    const playerColor = draggedToken.getAttribute('data-group');
-    const touch = e.changedTouches[0];
-    
-    // Usa document.elementFromPoint para ver onde o peão foi solto
-    const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-    
-    // Finaliza o drop
-    finalizeDrop(playerColor, dropTarget);
-    
-    // Limpeza
-    draggedToken.classList.remove('dragging');
-    draggedToken = null;
-    
-    // Reinicia a posição do peão para o esquema de transform original
-    centerTokenOnHouse(playerColor, houses[0]); 
-}
-
 // --- INICIALIZAÇÃO E LISTENERS ---
 
 drawCardBtn.addEventListener('click', drawCardAndMove);
@@ -348,39 +215,20 @@ drawCardBtn.addEventListener('click', drawCardAndMove);
 window.onload = function() {
     const startHouse = houses[0];
     
-    // Posição inicial dos peões
+    // 1. Posiciona os peões na casa inicial
     centerTokenOnHouse('red', startHouse);
     centerTokenOnHouse('blue', startHouse);
     centerTokenOnHouse('green', startHouse);
     centerTokenOnHouse('yellow', startHouse);
     
-    // Adiciona a div placeholder se ela não estiver no HTML (para que o JS possa manipulá-la)
+    // 2. Adiciona a div placeholder para a imagem (se não estiver no HTML)
     if (!document.querySelector('.card-image-placeholder')) {
         cardDisplay.insertAdjacentHTML('afterbegin', '<div class="card-image-placeholder"></div>');
     }
     
+    // 3. Inicializa o painel de ordem
     updateTurnDisplay(); 
 
-    // Adiciona LISTENERS para DESKTOP (Drag and Drop)
-    document.querySelectorAll('.player-token').forEach(token => {
-        token.addEventListener('dragstart', handleDragStart);
-        token.addEventListener('dragend', (e) => {
-            e.target.classList.remove('dragging');
-            draggedToken = null;
-        });
-    });
-
-    // Adiciona LISTENERS para o DROP TARGET (Casa Início)
-    document.querySelectorAll('.drop-target').forEach(house => {
-        house.addEventListener('dragover', handleDragOver);
-        house.addEventListener('drop', handleDrop);
-    });
-
-    // Adiciona LISTENERS para TOUCH (Mobile)
-    document.querySelectorAll('.player-token').forEach(token => {
-        token.addEventListener('touchstart', handleTouchStart);
-    });
-    // Adiciona touchmove e touchend ao corpo para rastrear o movimento em qualquer lugar da tela
-    document.body.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.body.addEventListener('touchend', handleTouchEnd);
+    // 4. Habilita o botão para o primeiro jogador
+    drawCardBtn.disabled = false;
 };
